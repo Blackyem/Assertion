@@ -1,13 +1,14 @@
 'use strict'
 const express = require('express');
 const app = express();
-
 const cors = require('cors');
 const runner = require('./test-runner');
-
+const colors = require("colors");
 const bodyParser = require('body-parser');
-app.use(bodyParser.json());
 
+
+
+app.use(bodyParser.json());
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 })
@@ -15,7 +16,7 @@ app.get('/', function (req, res) {
 app.use(express.static(__dirname + '/public'));
 
 app.get('/hello', function (req, res) {
-  const name = req.query.name || 'Guest';
+  const name = req.query.name || 'Ahmed';
   res.type('txt').send('hello ' + name);
 })
 
@@ -67,10 +68,12 @@ app.route('/travellers')
 
 let error;
 app.get('/_api/get-tests', cors(), function (req, res, next) {
-  if (error)
-    return res.json({ status: 'unavailable' });
-  next();
-},
+    if (error)
+      return res.json({
+        status: 'unavailable'
+      });
+    next();
+  },
   function (req, res, next) {
     if (!runner.report) return next();
     res.json(testFilter(runner.report, req.query.type, req.query.n));
@@ -80,22 +83,6 @@ app.get('/_api/get-tests', cors(), function (req, res, next) {
       process.nextTick(() => res.json(testFilter(runner.report, req.query.type, req.query.n)));
     });
   });
-
-
-const port = process.env.PORT || 3000;
-app.listen(port, function () {
-  console.log("Listening on port " + port);
-  console.log('Running Tests...');
-  setTimeout(function () {
-    try {
-      runner.run();
-    } catch (e) {
-      error = e;
-      console.log('Tests are not valid:');
-      console.log(error);
-    }
-  }, 1500);
-});
 
 
 module.exports = app; // for testing
@@ -117,3 +104,18 @@ function testFilter(tests, type, n) {
   }
   return out;
 }
+
+const port = process.env.PORT || 6060;
+app.listen(port, function () {
+  console.log(`Listening on port ${port}`.blue);
+  console.log(`Running Tests...`.yellow);
+  setTimeout(function () {
+    try {
+      runner.run();
+    } catch (e) {
+      error = e;
+      console.log('Tests are not valid:');
+      console.log(error);
+    }
+  }, 1500);
+});
